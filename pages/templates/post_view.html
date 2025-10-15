@@ -1,22 +1,52 @@
 {% extends 'base.html' %}
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
- <h1>{{ post.title }} | <span><small>Posted on {{ post.created_at|timesince }} ago.</small></span></h1>
- 
- <span>
-   <a href="{% url 'post_update' post.pk %}">Edit</a> | 
-   <a href="{% url 'post_delete' post.pk %}">Delete</a>
-</span>
- 
- <p>{{ post.body }}</p>
- 
-   <h4>Comments ({{ post.comments.count }})</h4>
-   <ul>
-      {% for comment in post.comments.all %}
-         <li><strong>{{ comment.author }}:</strong> {{ comment.text }} | {{ comment.created_at|timesince}} ago.</li>
-      {% empty %}
-         <li>No comment yet.</li>
-      {% endfor %}
-   </ul>  
- 
+
+<div class="title-bar">
+   <div class="post-title">{{ post.title }}</div>
+   <div class="post-meta">Posted <em>{{ post.created_at|timesince }}</em> ago.</div>
+   <div class="post-actions">
+      <button><a href="{% url "post_update" post.pk %}">Edit</a></button>
+      <button><a href="{% url "post_delete" post.pk %}">Delete</a></button>
+   </div>
+</div>
+
+<div class="post-body">{{ post.body }}</div>
+
+<div class="comments-area">
+   <h3>Comments ({{ post.comments.count }})</h3>
+
+   <div class="comment-list">
+      <ul>
+         {% for comment in post.comments.all %}
+            <li><strong>{{ comment.author }}:</strong> {{ comment.text }} | <small> {{ comment.created_at|timesince}} ago.</small></li>
+         {% empty %}
+            <li>No comment yet.</li>
+         {% endfor %}
+      </ul> 
+   </div>
+
+</div>
+
+<form method="post" class="comment-form">
+    {% csrf_token %}
+
+    <div>
+        <input type="text" name="{{ form.author.name }}" placeholder="Name" class="comment-input" value="{{ form.author.value|default:'' }}">
+        {% for error in form.author.errors %}
+            <span class="field-error-message">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <div>
+        <textarea name="{{ form.text.name }}" placeholder="Join discussion..." class="comment-textarea">{{ form.text.value|default:'' }}</textarea>
+        {% for error in form.text.errors %}
+            <span class="field-error-message">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="comment-submit">Add comment</button>
+</form>
+
+
 {% endblock %}

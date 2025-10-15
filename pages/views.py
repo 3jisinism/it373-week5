@@ -3,6 +3,8 @@ from django.http import HttpResponseBadRequest
 from django.contrib import messages
 from pages.forms import PostForm
 from pages.models import Post
+from pages.forms import CommentForm
+from pages.models import Comment 
 
 # Create your views here.
 def home(request):
@@ -50,7 +52,21 @@ def post_create(request):
 def post_view(request, pk):
     # post = get_object_or_404(Post, pk=pk)
     post = Post.objects.get(pk=pk)
-    return render(request, 'post_view.html', {'post': post})
+    comments = post.comments.all()
+    form = CommentForm(request.POST or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.save()
+            return redirect('post_view', pk=post.pk)
+        
+    return render(request, 'post_view.html', {
+        'post': post, 
+        'comments' : comments, 
+        'form': form
+    })
 
 def post_update(request, pk):
     post = get_object_or_404(Post, pk=pk)
